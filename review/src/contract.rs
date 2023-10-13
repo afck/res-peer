@@ -14,6 +14,7 @@ use linera_sdk::{
         Amount, ApplicationId, ChainId, ChannelName, Destination, Owner, SessionId, WithContractAbi,
     },
     contract::system_api,
+    views::views::ViewError,
     ApplicationCallResult, CalleeContext, Contract, ExecutionResult, MessageContext,
     OperationContext, SessionCallResult, ViewStateStorage,
 };
@@ -421,14 +422,13 @@ impl Contract for Review {
                     self.reviewers.indices().await?,
                 );
                 /* Will be stuck in the for each so we use indices */
-                for reviewer in self.reviewers.indices().await? {
-                    let reviewer = self.reviewers.get(&reviewer).await?.unwrap();
-                    result = result.with_authenticated_message(
-                        context.message_id.chain_id,
-                        Message::ExistReviewer { reviewer },
-                    );
-                }
-                /*
+                // for reviewer in self.reviewers.indices().await? {
+                //     let reviewer = self.reviewers.get(&reviewer).await?.unwrap();
+                //     result = result.with_authenticated_message(
+                //         context.message_id.chain_id,
+                //         Message::ExistReviewer { reviewer },
+                //     );
+                // }
                 let mut reviewers = Vec::new();
                 self.reviewers
                     .for_each_index_value(|_index, reviewer| -> Result<(), ViewError> {
@@ -448,10 +448,11 @@ impl Contract for Review {
                         Message::ExistReviewer { reviewer },
                     );
                 }
-                */
                 result = result.with_authenticated_message(
                     context.message_id.chain_id,
-                    Message::InitialState { state: self.initial_state().await? },
+                    Message::InitialState {
+                        state: self.initial_state().await?,
+                    },
                 );
                 log::info!(
                     "Synced reviewers to {} at {} creation {}",
